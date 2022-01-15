@@ -58,50 +58,37 @@ namespace proj
   
   // Get the character at the given index
   char rope_node::getCharByIndex(size_t index) const {
-    size_t w = this->weight_;
     // if node is a leaf, return the character at the specified index
     if (this->isLeaf()) {
-      if (index >= this->weight_) {
-        throw ERROR_OOB_NODE;
-      } else {
-        return this->fragment_[index];
-      }
+      if (index >= this->weight_) throw ERROR_OOB_NODE;
+      return this->fragment_[index];
+    } 
     // else search the appropriate child node
-    } else {
-      if (index < w) {
-        return this->left_->getCharByIndex(index);
-      } else {
-        return this->right_->getCharByIndex(index - w);
-      }
+    if (index < this->weight_) {
+      return this->left_->getCharByIndex(index);
     }
+    return this->right_->getCharByIndex(index - this->weight_);
   }
 
   // Get the substring of (len) chars beginning at index (start)
   string rope_node::getSubstring(size_t start, size_t len) const {
-    size_t w = this->weight_;
     if (this->isLeaf()) {
-      if(len < w) {
-        return this->fragment_.substr(start,len);
-      } else {
-        return this->fragment_;
-      }
-    } else {
-      // check if start index in left subtree
-      if (start < w) {
-        string lResult = (this->left_ == nullptr) ? "" : this->left_->getSubstring(start,len);
-        if ((start + len) > w) {
-          // get number of characters in left subtree
-          size_t tmp =  w - start;
-          string rResult = (this->right_ == nullptr) ? "" : this->right_->getSubstring(w,len-tmp);
-          return lResult.append(rResult);
-        } else {
-          return lResult;
-        }
-      // if start index is in the right subtree...
-      } else {
-        return (this->right_ == nullptr) ? "" : this->right_->getSubstring(start-w,len);
-      }
+      if(len < this->weight_) return this->fragment_.substr(start,len);
+      return this->fragment_;
     }
+    // check if start index in left subtree
+    if (start < this->weight_) {
+      string lResult = (this->left_ == nullptr) ? "" : this->left_->getSubstring(start,len);
+      if ((start + len) > this->weight_) {
+        // get number of characters in left subtree
+        size_t tmp =  this->weight_ - start;
+        string rResult = (this->right_ == nullptr) ? "" : this->right_->getSubstring(this->weight_,len-tmp);
+        return lResult.append(rResult);
+      }
+      return lResult;
+    }
+    // if start index is in the right subtree...
+    return (this->right_ == nullptr) ? "" : this->right_->getSubstring(start-this->weight_,len);
   }
   
   // Get string contained in current node and its children
